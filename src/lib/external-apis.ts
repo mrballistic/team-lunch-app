@@ -1,4 +1,20 @@
 // Utility functions for external API calls
+// Single destination walking time from ORS
+export async function getWalkingTimeFromORS(
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number }
+): Promise<number | null> {
+  const times = await getWalkingTimes(origin, [destination]);
+  return typeof times[0] === 'number' ? times[0] : null;
+}
+
+// Fallback: estimate walking time using Haversine formula
+export function getWalkingTimeFromYelp(
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number }
+): number {
+  return calculateHaversineWalkTime(origin, destination);
+}
 import { YELP_API_CONFIG, OPENROUTE_SERVICE_CONFIG, FALLBACK_CONFIG } from './api-config';
 
 export interface YelpBusiness {
