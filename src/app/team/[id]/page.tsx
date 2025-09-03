@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   Box,
-  Grid,
   Button,
   Alert,
   CircularProgress
@@ -14,10 +13,6 @@ import { RestaurantMenu } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import TeamMembers from '@/components/teams/TeamMembers';
 import RecentSessions from '@/components/teams/RecentSessions';
-
-interface TeamPageProps {
-  params: { id: string };
-}
 
 interface TeamData {
   id: string;
@@ -45,59 +40,35 @@ interface TeamData {
   }>;
 }
 
-export default function TeamPage({ params }: TeamPageProps) {
+export default function TeamPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [team, setTeam] = useState<TeamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId] = useState('temp-user-id'); // TODO: Get from auth context
+  const [teamId, setTeamId] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    (async () => {
+      const { id } = await params;
+      setTeamId(id);
+      loadTeamData(id);
+    })();
+  }, [params]);
 
-        // TODO: Replace with actual auth token
-        const response = await fetch(`/api/teams/${params.id}`, {
-          headers: {
-            'Authorization': 'Bearer temp-token'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to load team data');
-        }
-
-        const teamData = await response.json();
-        setTeam(teamData);
-      } catch (err) {
-        console.error('Error loading team:', err);
-        setError('Failed to load team data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [params.id]);
-
-  const loadTeamData = async () => {
+  const loadTeamData = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
-
       // TODO: Replace with actual auth token
-      const response = await fetch(`/api/teams/${params.id}`, {
+      const response = await fetch(`/api/teams/${id}`, {
         headers: {
           'Authorization': 'Bearer temp-token'
         }
       });
-
       if (!response.ok) {
         throw new Error('Failed to load team data');
       }
-
       const teamData = await response.json();
       setTeam(teamData);
     } catch (err) {
@@ -142,7 +113,7 @@ export default function TeamPage({ params }: TeamPageProps) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{error}</Alert>
-        <Button onClick={loadTeamData} sx={{ mt: 2 }}>
+        <Button onClick={() => teamId && loadTeamData(teamId)} sx={{ mt: 2 }}>
           Try Again
         </Button>
       </Container>
@@ -182,8 +153,8 @@ export default function TeamPage({ params }: TeamPageProps) {
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
+      <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3}>
+        <Box flex={2} minWidth={0}>
           <TeamMembers
             members={team.members}
             currentUserId={currentUserId}
@@ -191,15 +162,14 @@ export default function TeamPage({ params }: TeamPageProps) {
             onAddMember={handleAddMember}
             onRemoveMember={handleRemoveMember}
           />
-        </Grid>
-        
-        <Grid size={{ xs: 12, md: 4 }}>
+        </Box>
+        <Box flex={1} minWidth={0}>
           <RecentSessions
             sessions={team.recentSessions}
             onViewSession={handleViewSession}
           />
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Container>
   );
 }

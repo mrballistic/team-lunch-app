@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -25,18 +25,28 @@ interface Session {
   closed_at: string | null;
 }
 
-export default function SessionPage({ params }: { params: { id: string } }) {
+export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
-  const loadSession = async () => {
+  useEffect(() => {
+    (async () => {
+      const { id } = await params;
+      setSessionId(id);
+      loadSession(id);
+    })();
+    // eslint-disable-next-line
+  }, [params]);
+
+  const loadSession = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
   // Replace with actual auth token in production
-      const response = await fetch(`/api/sessions/${params.id}`, {
+      const response = await fetch(`/api/sessions/${id}`, {
         headers: {
           'Authorization': 'Bearer temp-token'
         }
@@ -49,9 +59,6 @@ export default function SessionPage({ params }: { params: { id: string } }) {
       setLoading(false);
     }
   };
-
-  // Load session on mount
-  useState(() => { loadSession(); });
 
   const handleOpenConfig = () => setConfigOpen(true);
   const handleCloseConfig = () => setConfigOpen(false);
@@ -80,7 +87,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error">{error}</Alert>
-        <Button onClick={loadSession} sx={{ mt: 2 }} aria-label="Retry loading session">
+        <Button onClick={() => sessionId && loadSession(sessionId)} sx={{ mt: 2 }} aria-label="Retry loading session">
           Try Again
         </Button>
       </Container>
