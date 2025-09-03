@@ -1,0 +1,17 @@
+{
+  "name": "team-lunch-app",
+  "version": "1.0.0",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
+    "YELP_API_KEY": "@yelp-api-key",
+    "OPENROUTE_SERVICE_API_KEY": "@openroute-service-api-key"
+  }
+}
