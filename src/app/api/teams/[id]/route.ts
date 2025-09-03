@@ -3,10 +3,10 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const teamId = params.id;
+    const { id: teamId } = await context.params;
 
     // Get user from auth header
     const authHeader = request.headers.get('authorization');

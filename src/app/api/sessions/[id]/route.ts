@@ -4,15 +4,15 @@ import { authenticateUser, createErrorResponse, createSuccessResponse, handleApi
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id } = await context.params;
     const user = await authenticateUser(request.headers.get('authorization'));
     const { data: session, error: sessionError } = await supabaseAdmin
       .from('lunch_sessions')
       .select('*')
-      .eq('id', sessionId)
+      .eq('id', id)
       .single();
     if (sessionError || !session) {
       return createErrorResponse('NOT_FOUND', 'Session not found', 404);

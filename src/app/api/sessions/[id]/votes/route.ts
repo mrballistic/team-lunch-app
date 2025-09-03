@@ -4,10 +4,10 @@ import { authenticateUser, createErrorResponse, createSuccessResponse, handleApi
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id: sessionId } = await context.params;
     const body = await request.json();
     const { suggestionId } = body;
     if (!suggestionId) {
@@ -47,10 +47,10 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sessionId = params.id;
+    const { id: sessionId } = await context.params;
     // Get all votes and tally
     const { data: votes, error: votesError } = await supabaseAdmin
       .from('votes')

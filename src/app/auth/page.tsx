@@ -1,4 +1,5 @@
 import { Container, Typography, Box, Paper, Button } from '@mui/material';
+import SupabaseAuth from '@/components/auth/SupabaseAuth';
 
 export default function AuthPage() {
   return (
@@ -16,6 +17,7 @@ export default function AuthPage() {
           Sign in with Supabase (Coming Soon)
         </Button>
       </Paper>
+      <SupabaseAuth />
     </Container>
   );
 }
