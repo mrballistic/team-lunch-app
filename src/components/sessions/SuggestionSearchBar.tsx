@@ -20,11 +20,13 @@ export default function SuggestionSearchBar({ onSuggest }: SuggestionSearchBarPr
   return (
     <Box component="form" onSubmit={handleSubmit} display="flex" gap={2} alignItems="center" mb={2}>
       <FormControl size="small">
-        <InputLabel>Type</InputLabel>
+        <InputLabel id="type-label">Type</InputLabel>
         <Select
+          labelId="type-label"
           value={type}
           label="Type"
           onChange={e => setType(e.target.value as 'restaurant' | 'style')}
+          inputProps={{ 'aria-label': 'Suggestion type' }}
         >
           <MenuItem value="restaurant">Restaurant</MenuItem>
           <MenuItem value="style">Cuisine/Style</MenuItem>
@@ -37,8 +39,9 @@ export default function SuggestionSearchBar({ onSuggest }: SuggestionSearchBarPr
         size="small"
         variant="outlined"
         sx={{ minWidth: 200 }}
+        inputProps={{ 'aria-label': type === 'restaurant' ? 'Restaurant name' : 'Cuisine or style' }}
       />
-      <Button type="submit" variant="contained" size="small">
+      <Button type="submit" variant="contained" size="small" aria-label="Suggest restaurant or style">
         Suggest
       </Button>
     </Box>

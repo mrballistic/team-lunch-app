@@ -27,9 +27,9 @@ interface SuggestionsListProps {
 
 export default function SuggestionsList({ suggestions, onVote, tally }: SuggestionsListProps) {
   return (
-    <div>
+    <div role="list">
       {suggestions.length === 0 ? (
-        <p>No suggestions yet. Be the first to suggest!</p>
+        <p aria-live="polite">No suggestions yet. Be the first to suggest!</p>
       ) : (
         suggestions.map(suggestion => (
           <SuggestionCard

@@ -62,11 +62,11 @@ export default function RecentSessions({
         </Typography>
 
         {sessions.length === 0 ? (
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" aria-live="polite">
             No sessions yet. Create your first lunch session!
           </Typography>
         ) : (
-          <List disablePadding>
+          <List disablePadding role="list">
             {sessions.map((session) => (
               <ListItem
                 key={session.id}
@@ -109,6 +109,7 @@ export default function RecentSessions({
                 <IconButton
                   onClick={() => onViewSession(session.id)}
                   size="small"
+                  aria-label={`View session ${session.id.slice(0, 8)}`}
                 >
                   <Visibility />
                 </IconButton>

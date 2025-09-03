@@ -45,15 +45,17 @@ export default function SessionConfigModal({ open, onClose, onCreate }: SessionC
             type="number"
             value={maxWalkMinutes}
             onChange={e => setMaxWalkMinutes(Number(e.target.value))}
-            inputProps={{ min: 1, max: 60 }}
+            inputProps={{ min: 1, max: 60, 'aria-label': 'Max walk minutes' }}
             fullWidth
           />
           <FormControl fullWidth>
-            <InputLabel>Min Price Tier</InputLabel>
+            <InputLabel id="min-price-label">Min Price Tier</InputLabel>
             <Select
+              labelId="min-price-label"
               value={priceMin}
               label="Min Price Tier"
               onChange={e => setPriceMin(Number(e.target.value))}
+              inputProps={{ 'aria-label': 'Min price tier' }}
             >
               <MenuItem value={1}>$</MenuItem>
               <MenuItem value={2}>$$</MenuItem>
@@ -62,11 +64,13 @@ export default function SessionConfigModal({ open, onClose, onCreate }: SessionC
             </Select>
           </FormControl>
           <FormControl fullWidth>
-            <InputLabel>Max Price Tier</InputLabel>
+            <InputLabel id="max-price-label">Max Price Tier</InputLabel>
             <Select
+              labelId="max-price-label"
               value={priceMax}
               label="Max Price Tier"
               onChange={e => setPriceMax(Number(e.target.value))}
+              inputProps={{ 'aria-label': 'Max price tier' }}
             >
               <MenuItem value={1}>$</MenuItem>
               <MenuItem value={2}>$$</MenuItem>
@@ -79,14 +83,14 @@ export default function SessionConfigModal({ open, onClose, onCreate }: SessionC
             type="number"
             value={cooldownDays}
             onChange={e => setCooldownDays(Number(e.target.value))}
-            inputProps={{ min: 0, max: 30 }}
+            inputProps={{ min: 0, max: 30, 'aria-label': 'Cooldown days' }}
             fullWidth
           />
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleCreate} variant="contained">Create Session</Button>
+        <Button onClick={onClose} aria-label="Cancel session configuration">Cancel</Button>
+        <Button onClick={handleCreate} variant="contained" aria-label="Create session">Create Session</Button>
       </DialogActions>
     </Dialog>
   );

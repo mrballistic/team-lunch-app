@@ -13,7 +13,7 @@ const VoteTallyPanel: React.FC<VoteTallyPanelProps> = ({ tally, suggestions }) =
   return (
     <div style={{ marginTop: 24 }}>
       <h3>Live Vote Tally</h3>
-      <ul>
+      <ul role="list" aria-live="polite">
         {suggestions.map(suggestion => (
           <li key={suggestion.id}>
             <strong>{suggestion.name}</strong>: {tally[suggestion.id] || 0} votes

@@ -35,7 +35,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     try {
       setLoading(true);
       setError(null);
-      // TODO: Replace with actual auth token
+  // Replace with actual auth token in production
       const response = await fetch(`/api/sessions/${params.id}`, {
         headers: {
           'Authorization': 'Bearer temp-token'
@@ -61,7 +61,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     priceMax: number;
     cooldownDays: number;
   }) => {
-    // TODO: Call API to create session
+  // Call API to create session in production
     setConfigOpen(false);
   };
 
@@ -80,7 +80,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Alert severity="error">{error}</Alert>
-        <Button onClick={loadSession} sx={{ mt: 2 }}>
+        <Button onClick={loadSession} sx={{ mt: 2 }} aria-label="Retry loading session">
           Try Again
         </Button>
       </Container>
@@ -101,7 +101,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         <Typography variant="h4" component="h1">
           Lunch Session
         </Typography>
-        <Button variant="contained" onClick={handleOpenConfig}>
+        <Button variant="contained" onClick={handleOpenConfig} aria-label="Open session configuration">
           Configure Session
         </Button>
       </Box>

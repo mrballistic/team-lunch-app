@@ -26,7 +26,7 @@ export default function Home() {
           <Button variant="contained" component={Link} href="/demo">
             View Demo Team
           </Button>
-          <Button variant="outlined">
+          <Button variant="outlined" component={Link} href="/auth">
             Sign In
           </Button>
         </Box>

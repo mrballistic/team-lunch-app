@@ -50,6 +50,7 @@ export default function TeamMembers({
               variant="outlined"
               onClick={onAddMember}
               size="small"
+              aria-label="Add team member"
             >
               Add Member
             </Button>
@@ -72,6 +73,7 @@ export default function TeamMembers({
                 <Avatar
                   src={member.user.avatar_url || undefined}
                   alt={member.user.name || member.user.email}
+                  aria-label={`Avatar for ${member.user.name || member.user.email}`}
                 >
                   {(member.user.name || member.user.email)[0].toUpperCase()}
                 </Avatar>
@@ -111,6 +113,7 @@ export default function TeamMembers({
                   onClick={() => onRemoveMember(member.user.id)}
                   color="error"
                   size="small"
+                  aria-label={`Remove ${member.user.name || member.user.email} from team`}
                 >
                   <Delete />
                 </IconButton>

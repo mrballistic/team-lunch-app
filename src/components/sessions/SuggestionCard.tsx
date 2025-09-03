@@ -31,7 +31,7 @@ export default function SuggestionCard({ suggestion, onVote, votes }: Suggestion
       <CardContent>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box>
-            <Typography variant="h6">
+            <Typography variant="h6" aria-label={`Suggestion: ${suggestion.label}`}>
               {suggestion.label}
             </Typography>
             <Box display="flex" gap={1} mt={1}>
@@ -50,7 +50,13 @@ export default function SuggestionCard({ suggestion, onVote, votes }: Suggestion
             <Typography variant="h5" color="primary">
               {votes ?? 0}
             </Typography>
-            <Button variant="contained" size="small" onClick={() => onVote(suggestion.id)} sx={{ mt: 1 }}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => onVote(suggestion.id)}
+              sx={{ mt: 1 }}
+              aria-label={`Vote for ${suggestion.label}`}
+            >
               Vote
             </Button>
           </Box>
