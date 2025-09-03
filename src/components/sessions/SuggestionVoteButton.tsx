@@ -29,7 +29,13 @@ const SuggestionVoteButton: React.FC<SuggestionVoteButtonProps> = ({ suggestionI
   };
 
   return (
-    <button onClick={handleVote} disabled={loading} style={{ marginLeft: 8 }}>
+    <button
+      onClick={handleVote}
+      disabled={loading}
+      style={{ marginLeft: 8 }}
+      aria-label={loading ? 'Voting for suggestion' : 'Vote for suggestion'}
+      tabIndex={0}
+    >
       {loading ? 'Voting...' : 'Vote'}
     </button>
   );
