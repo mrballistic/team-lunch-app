@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Container,
   Typography,
@@ -12,9 +13,12 @@ import {
   Alert
 } from '@mui/material';
 import SessionConfigModal from '@/components/sessions/SessionConfigModal';
+import SuggestionSearchBar from '@/components/sessions/SuggestionSearchBar';
+import SuggestionsList from '@/components/sessions/SuggestionsList';
 
 interface Session {
   id: string;
+  team_id: string;
   status: 'draft' | 'open' | 'closed';
   max_walk_minutes: number | null;
   price_min: number | null;
@@ -25,21 +29,70 @@ interface Session {
   closed_at: string | null;
 }
 
-export default function SessionPage({ params }: { params: Promise<{ id: string }> }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function SessionPage({ params }: any) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const router = useRouter();
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState([]);
+  // ...existing code...
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  // ...existing code...
 
   useEffect(() => {
-    (async () => {
-      const { id } = await params;
-      setSessionId(id);
-      loadSession(id);
-    })();
-    // eslint-disable-next-line
+    const { id } = params;
+    setSessionId(id);
+    loadSession(id);
+    loadSuggestions(id);
   }, [params]);
+
+  // ...existing code...
+
+  // (rest of the file unchanged)
+
+  const loadSuggestions = async (id: string) => {
+    try {
+      setSuggestionError(null);
+      const response = await fetch(`/api/sessions/${id}/suggestions`, {
+        headers: {
+          'Authorization': 'Bearer temp-token'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to load suggestions');
+      setSuggestions(await response.json());
+    } catch (error) {
+      console.error('Load suggestions error:', error);
+      setSuggestionError('Failed to load suggestions.');
+    }
+  };
+  const handleSuggest = async (type: 'restaurant' | 'style', label: string) => {
+    if (!sessionId) return;
+    setSuggestionError(null);
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/suggestions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer temp-token'
+        },
+        body: JSON.stringify({ type, label })
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        setSuggestionError(error?.error?.message || 'Failed to add suggestion');
+        return;
+      }
+      // Reload suggestions after adding
+      loadSuggestions(sessionId);
+    } catch (error) {
+      console.error('Add suggestion error:', error);
+      setSuggestionError('Failed to add suggestion.');
+    }
+  };
 
   const loadSession = async (id: string) => {
     try {
@@ -54,6 +107,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       if (!response.ok) throw new Error('Failed to load session');
       setSession(await response.json());
     } catch (err) {
+      console.error('Load session error:', err);
       setError('Failed to load session.');
     } finally {
       setLoading(false);
@@ -68,8 +122,38 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     priceMax: number;
     cooldownDays: number;
   }) => {
-  // Call API to create session in production
-    setConfigOpen(false);
+    if (!session) return;
+  // Removed setCreating (no longer used)
+    setCreateError(null);
+    try {
+      // Replace with actual auth token and teamId in production
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer temp-token'
+        },
+        body: JSON.stringify({
+          teamId: session.team_id,
+          maxWalkMinutes: config.maxWalkMinutes,
+          priceMin: config.priceMin,
+          priceMax: config.priceMax,
+          cooldownDays: config.cooldownDays
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+  setCreateError(err?.error?.message || 'Failed to create session');
+  return;
+      }
+      const newSession = await response.json();
+  setConfigOpen(false);
+  // Redirect to new session page
+  router.push(`/session/${newSession.id}`);
+    } catch (err) {
+      console.error('Create session error:', err);
+  setCreateError('Failed to create session. Please try again.');
+    }
   };
 
   if (loading) {
@@ -112,7 +196,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           Configure Session
         </Button>
       </Box>
-      <Paper elevation={2} sx={{ p: 4 }}>
+      <Paper elevation={2} sx={{ p: 4, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           Status: <Chip label={session.status} color={session.status === 'open' ? 'success' : session.status === 'closed' ? 'default' : 'warning'} />
         </Typography>
@@ -133,7 +217,18 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
             Closed At: {new Date(session.closed_at).toLocaleString()}
           </Typography>
         )}
+        {createError && (
+          <Alert severity="error" sx={{ mt: 2 }}>{createError}</Alert>
+        )}
       </Paper>
+
+      {/* Suggestion Search Bar */}
+      <SuggestionSearchBar onSuggest={handleSuggest} />
+      {suggestionError && (
+        <Alert severity="error" sx={{ mb: 2 }}>{suggestionError}</Alert>
+      )}
+      <SuggestionsList suggestions={suggestions} onVote={() => {}} />
+
       <SessionConfigModal
         open={configOpen}
         onClose={handleCloseConfig}

@@ -1,6 +1,6 @@
 {
   "name": "team-lunch-app",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16,19 +16,23 @@
     "@mui/x-date-pickers": "^8.11.0",
     "@supabase/supabase-js": "^2.57.0",
     "next": "15.5.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "swr": "^2.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "jest": "^30.1.3",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.1",
     "typescript": "^5"
   }
 }

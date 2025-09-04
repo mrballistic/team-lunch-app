@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string}> }
 ) {
   try {
     const { id: teamId } = await context.params;
@@ -118,7 +118,7 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string}> }
 ) {
   try {
     const { id: teamId } = await context.params;

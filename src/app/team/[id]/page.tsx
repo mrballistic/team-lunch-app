@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
+} from '@mui/material';
+import {
   Container,
   Typography,
   Box,
@@ -46,6 +53,10 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId] = useState('temp-user-id'); // TODO: Get from auth context
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addEmail, setAddEmail] = useState('');
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addLoading, setAddLoading] = useState(false);
   const [teamId, setTeamId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,13 +91,73 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   };
 
   const handleAddMember = () => {
-    // TODO: Implement add member dialog
-    console.log('Add member clicked');
+    setAddDialogOpen(true);
+    setAddEmail('');
+    setAddError(null);
+  };
+
+  const handleAddDialogClose = () => {
+    setAddDialogOpen(false);
+    setAddEmail('');
+    setAddError(null);
+    setAddLoading(false);
+  };
+
+  const handleAddDialogSubmit = async () => {
+    if (!addEmail.trim()) {
+      setAddError('Email is required');
+      return;
+    }
+    setAddLoading(true);
+    setAddError(null);
+    try {
+      // TODO: Replace with actual auth token
+      const response = await fetch(`/api/teams/${teamId}/members`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer temp-token'
+        },
+        body: JSON.stringify({ email: addEmail })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        setAddError(err?.error?.message || 'Failed to add member');
+        setAddLoading(false);
+        return;
+      }
+      handleAddDialogClose();
+      // Reload team data to show new member
+      if (teamId) loadTeamData(teamId);
+    } catch (err) {
+      console.error('Add member error:', err);
+      setAddError('Failed to add member. Please try again.');
+    } finally {
+      setAddLoading(false);
+    }
   };
 
   const handleRemoveMember = async (userId: string) => {
-    // TODO: Implement remove member
-    console.log('Remove member:', userId);
+    if (!teamId) return;
+    try {
+      // TODO: Replace with actual auth token
+      const response = await fetch(`/api/teams/${teamId}/members?userId=${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer temp-token'
+        }
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        setError(err?.error?.message || 'Failed to remove member');
+        return;
+      }
+      // Reload team data to reflect removal
+      loadTeamData(teamId);
+    } catch (err) {
+      console.error('Remove member error:', err);
+      setError('Failed to remove member. Please try again.');
+    }
   };
 
   const handleViewSession = (sessionId: string) => {
@@ -142,7 +213,6 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
             {team.members.length} members • Office location: {team.defaultLocation.lat.toFixed(4)}, {team.defaultLocation.lng.toFixed(4)}
           </Typography>
         </Box>
-        
         <Button
           variant="contained"
           startIcon={<RestaurantMenu />}
@@ -170,6 +240,31 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
           />
         </Box>
       </Box>
+
+      {/* Add Member Dialog */}
+      <Dialog open={addDialogOpen} onClose={handleAddDialogClose}>
+        <DialogTitle>Add Team Member</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="User Email"
+            type="email"
+            fullWidth
+            value={addEmail}
+            onChange={e => setAddEmail(e.target.value)}
+            disabled={addLoading}
+            aria-label="User email to add"
+          />
+          {addError && (
+            <Alert severity="error" sx={{ mt: 2 }}>{addError}</Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddDialogClose} disabled={addLoading}>Cancel</Button>
+          <Button onClick={handleAddDialogSubmit} disabled={addLoading} variant="contained">Add</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

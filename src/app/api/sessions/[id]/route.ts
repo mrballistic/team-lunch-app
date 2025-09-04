@@ -2,13 +2,15 @@ import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+
+export async function GET(request: NextRequest) {
   try {
-    const { id } = await context.params;
-    const user = await authenticateUser(request.headers.get('authorization'));
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return createErrorResponse('BAD_REQUEST', 'Session ID is required', 400);
+    }
+    await authenticateUser(request.headers.get('authorization'));
     const { data: session, error: sessionError } = await supabaseAdmin
       .from('lunch_sessions')
       .select('*')

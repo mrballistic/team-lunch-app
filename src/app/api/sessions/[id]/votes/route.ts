@@ -4,7 +4,7 @@ import { authenticateUser, createErrorResponse, createSuccessResponse, handleApi
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string}> }
 ) {
   try {
     const { id: sessionId } = await context.params;
@@ -47,7 +47,7 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string}> }
 ) {
   try {
     const { id: sessionId } = await context.params;

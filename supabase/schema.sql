@@ -107,7 +107,6 @@ alter table public.restaurants enable row level security;
 alter table public.visits enable row level security;
 alter table public.reviews enable row level security;
 
--- RLS Policies for users table
 create policy "Users can view their own profile" on public.users
   for select using (auth.uid() = id);
 
@@ -119,7 +118,6 @@ create policy "Users can insert their own profile" on public.users
 
 -- RLS Policies for teams table
 create policy "Team members can view their teams" on public.teams
-  for select using (
     exists (
       select 1 from public.team_members 
       where team_id = id and user_id = auth.uid()
