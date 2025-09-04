@@ -1,11 +1,13 @@
 'use client';
+import * as React from 'react';
 import { createTheme, ThemeProvider, useMediaQuery } from '@mui/material';
 import { useMemo } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
-  
+  // Always call useMediaQuery, but disable SSR for media query detection
+  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)', { noSsr: true });
+
   const theme = useMemo(
     () => createTheme({ 
       palette: { 
@@ -17,7 +19,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }),
     [prefersDark]
   );
-  
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
