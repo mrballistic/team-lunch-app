@@ -106,26 +106,16 @@ export async function getWalkingTimes(
       metrics: ['duration'],
       units: 'm'
     });
-    // Debug logging for integration test
-    if (process.env.NODE_ENV === 'test') {
-      // eslint-disable-next-line no-console
-      console.log('[ORS DEBUG] ENV:', {
-        OPENROUTE_SERVICE_API_KEY: process.env.OPENROUTE_SERVICE_API_KEY,
-      });
 
-      console.log('[ORS DEBUG] Config:', process.env);
-      // eslint-disable-next-line no-console
-      console.log('[ORS DEBUG] Request:', { url, headers, body });
-    }
+
+
     const response = await fetch(url, {
       method: 'POST',
       headers,
       body
     });
     if (process.env.NODE_ENV === 'test') {
-      // eslint-disable-next-line no-console
       console.log('[ORS DEBUG] Response status:', response.status);
-      // eslint-disable-next-line no-console
       try { console.log('[ORS DEBUG] Response body:', await response.clone().text()); } catch {}
     }
     if (!response.ok) {
@@ -134,7 +124,7 @@ export async function getWalkingTimes(
     const data = await response.json();
     return data.durations[0].map((duration: number) => Math.round(duration / 60)); // Convert to minutes
   } catch (error) {
-    console.error('OpenRouteService API failed, using fallback:', error);
+  console.error('OpenRouteService API failed, using fallback:', error);
     return destinations.map(dest => calculateHaversineWalkTime(from, dest));
   }
 }

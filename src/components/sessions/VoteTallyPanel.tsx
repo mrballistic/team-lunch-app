@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
 
 export interface VoteTally {
   [suggestionId: string]: number;
@@ -11,16 +12,23 @@ interface VoteTallyPanelProps {
 
 const VoteTallyPanel: React.FC<VoteTallyPanelProps> = ({ tally, suggestions }) => {
   return (
-    <div style={{ marginTop: 24 }}>
-      <h3>Live Vote Tally</h3>
-      <ul role="list" aria-live="polite">
+    <Box mt={3}>
+      <Typography variant="h6" gutterBottom>Live Vote Tally</Typography>
+      <List role="list" aria-live="polite">
         {suggestions.map(suggestion => (
-          <li key={suggestion.id}>
-            <strong>{suggestion.name}</strong>: {tally[suggestion.id] || 0} votes
-          </li>
+          <ListItem key={suggestion.id} disablePadding>
+            <ListItemText
+              primary={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="body1" fontWeight="medium">{suggestion.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{tally[suggestion.id] || 0} votes</Typography>
+                </Box>
+              }
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   );
 };
 

@@ -64,6 +64,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   const [team, setTeam] = useState<TeamData | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewSessionId, setReviewSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -80,7 +81,6 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         loadTeamData(id, session.access_token);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, user, session]);
 
   const loadTeamData = async (id: string, accessToken: string) => {
@@ -194,12 +194,9 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   // }, [team]);
 
   const handleReviewSubmit = async (rating: number, comment: string) => {
-    if (!session || !teamId) return;
+    if (!session || !teamId || !reviewSessionId) return;
     setReviewLoading(true);
     try {
-      // For demo: submit review for the most recent session/restaurant
-      const lastSession = team?.recentSessions?.[0];
-      if (!lastSession) return;
       const response = await fetch(`/api/teams/${teamId}/reviews`, {
         method: 'POST',
         headers: {
@@ -207,7 +204,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          sessionId: lastSession.id,
+          sessionId: reviewSessionId,
           rating,
           comment
         })
@@ -216,7 +213,8 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         throw new Error('Failed to submit review');
       }
       setReviewDialogOpen(false);
-      // Optionally reload team data to show new review
+      setReviewSessionId(null);
+      // Reload team data to show new review
       if (teamId) loadTeamData(teamId, session.access_token);
     } catch (err) {
       console.error('Review submit error:', err);
@@ -307,6 +305,21 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
             sessions={team.recentSessions}
             onViewSession={handleViewSession}
           />
+          {/* Leave Review button for recent sessions */}
+          {team.recentSessions && team.recentSessions.length > 0 && (
+            <Box mt={3}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  setReviewSessionId(team.recentSessions[0].id);
+                  setReviewDialogOpen(true);
+                }}
+                aria-label="Leave a review for the most recent session"
+              >
+                Leave Review
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
 

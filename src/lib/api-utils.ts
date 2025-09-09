@@ -1,6 +1,9 @@
 // API utility functions and error handling
 import { NextResponse } from 'next/server';
+// Ensure supabaseAdmin is exported from './supabase'
 import { supabaseAdmin } from './supabase';
+// If the export is named differently, update the import accordingly:
+// import { correctExportName as supabaseAdmin } from './supabase';
 
 export interface ApiError {
   code: string;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@mui/material';
 
 interface SuggestionVoteButtonProps {
   suggestionId: string;
@@ -29,15 +30,16 @@ const SuggestionVoteButton: React.FC<SuggestionVoteButtonProps> = ({ suggestionI
   };
 
   return (
-    <button
+    <Button
       onClick={handleVote}
       disabled={loading}
-      style={{ marginLeft: 8 }}
+      variant="outlined"
+      size="small"
+      sx={{ ml: 1 }}
       aria-label={loading ? 'Voting for suggestion' : 'Vote for suggestion'}
-      tabIndex={0}
     >
       {loading ? 'Voting...' : 'Vote'}
-    </button>
+    </Button>
   );
 };
 
