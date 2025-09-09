@@ -13,8 +13,10 @@
 - Yelp/ORS integration
 
 ## Next Steps
-- Scaffold Next.js + Supabase
-- Implement Teams API & dashboard
-- Build Sessions API & config modal
-- Develop Suggestions API & UI
-- Enable voting & results
+- Scaffold Next.js + Supabase ✅
+- Implement Teams API & dashboard ✅
+- Add team lunch history & review dialog ✅
+- Build Sessions API & config modal ✅
+- Develop Suggestions API & UI ✅
+- Enable voting & results (live tally integrated)
+- Ranking, results, and dietary fit integrated (winner, badges, API, UI)

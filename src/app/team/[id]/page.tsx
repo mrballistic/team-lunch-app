@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/components/providers/AuthProvider';
 import {
   Dialog,
   DialogTitle,
@@ -20,6 +21,9 @@ import { RestaurantMenu } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import TeamMembers from '@/components/teams/TeamMembers';
 import RecentSessions from '@/components/teams/RecentSessions';
+import TeamHistory from '@/components/teams/TeamHistory';
+import ReviewDialog from '@/components/teams/ReviewDialog';
+import DietarySettings from '@/components/teams/DietarySettings';
 
 interface TeamData {
   id: string;
@@ -45,14 +49,23 @@ interface TeamData {
     created_at: string;
     closed_at: string | null;
   }>;
+  history?: Array<{
+    id: string;
+    date: string;
+    restaurant: string;
+    rating: number | null;
+    review: string | null;
+  }>;
 }
 
 export default function TeamPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { user, session, loading: authLoading } = useAuth();
   const [team, setTeam] = useState<TeamData | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserId] = useState('temp-user-id'); // TODO: Get from auth context
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addEmail, setAddEmail] = useState('');
   const [addError, setAddError] = useState<string | null>(null);
@@ -63,18 +76,20 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     (async () => {
       const { id } = await params;
       setTeamId(id);
-      loadTeamData(id);
+      if (user && session) {
+        loadTeamData(id, session.access_token);
+      }
     })();
-  }, [params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, user, session]);
 
-  const loadTeamData = async (id: string) => {
+  const loadTeamData = async (id: string, accessToken: string) => {
     try {
       setLoading(true);
       setError(null);
-      // TODO: Replace with actual auth token
       const response = await fetch(`/api/teams/${id}`, {
         headers: {
-          'Authorization': 'Bearer temp-token'
+          'Authorization': `Bearer ${accessToken}`
         }
       });
       if (!response.ok) {
@@ -108,15 +123,18 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
       setAddError('Email is required');
       return;
     }
+    if (!session) {
+      setAddError('Not authenticated');
+      return;
+    }
     setAddLoading(true);
     setAddError(null);
     try {
-      // TODO: Replace with actual auth token
       const response = await fetch(`/api/teams/${teamId}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer temp-token'
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ email: addEmail })
       });
@@ -128,7 +146,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
       }
       handleAddDialogClose();
       // Reload team data to show new member
-      if (teamId) loadTeamData(teamId);
+      if (teamId) loadTeamData(teamId, session.access_token);
     } catch (err) {
       console.error('Add member error:', err);
       setAddError('Failed to add member. Please try again.');
@@ -138,13 +156,12 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
   };
 
   const handleRemoveMember = async (userId: string) => {
-    if (!teamId) return;
+    if (!teamId || !session) return;
     try {
-      // TODO: Replace with actual auth token
       const response = await fetch(`/api/teams/${teamId}/members?userId=${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': 'Bearer temp-token'
+          'Authorization': `Bearer ${session.access_token}`
         }
       });
       if (!response.ok) {
@@ -153,7 +170,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         return;
       }
       // Reload team data to reflect removal
-      loadTeamData(teamId);
+      loadTeamData(teamId, session.access_token);
     } catch (err) {
       console.error('Remove member error:', err);
       setError('Failed to remove member. Please try again.');
@@ -169,7 +186,46 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     console.log('Create session clicked');
   };
 
-  if (loading) {
+  // Example: Open review dialog after a session (replace with real trigger)
+  // useEffect(() => {
+  //   if (team && team.recentSessions.length > 0 && !reviewDialogOpen) {
+  //     setReviewDialogOpen(true);
+  //   }
+  // }, [team]);
+
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    if (!session || !teamId) return;
+    setReviewLoading(true);
+    try {
+      // For demo: submit review for the most recent session/restaurant
+      const lastSession = team?.recentSessions?.[0];
+      if (!lastSession) return;
+      const response = await fetch(`/api/teams/${teamId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          sessionId: lastSession.id,
+          rating,
+          comment
+        })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to submit review');
+      }
+      setReviewDialogOpen(false);
+      // Optionally reload team data to show new review
+      if (teamId) loadTeamData(teamId, session.access_token);
+    } catch (err) {
+      console.error('Review submit error:', err);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  if (loading || authLoading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
         <CircularProgress />
@@ -184,7 +240,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">{error}</Alert>
-        <Button onClick={() => teamId && loadTeamData(teamId)} sx={{ mt: 2 }}>
+        <Button onClick={() => teamId && session && loadTeamData(teamId, session.access_token)} sx={{ mt: 2 }}>
           Try Again
         </Button>
       </Container>
@@ -199,7 +255,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     );
   }
 
-  const currentUserMember = team.members.find(m => m.user.id === currentUserId);
+  const currentUserMember = user ? team.members.find(m => m.user.id === user.id) : undefined;
   const isOwner = currentUserMember?.role === 'owner';
 
   return (
@@ -227,11 +283,24 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
         <Box flex={2} minWidth={0}>
           <TeamMembers
             members={team.members}
-            currentUserId={currentUserId}
+            currentUserId={user?.id || ''}
             isOwner={isOwner}
             onAddMember={handleAddMember}
             onRemoveMember={handleRemoveMember}
           />
+          {/* Dietary Settings for current user */}
+          {user && session && teamId && (
+            <Box mt={3}>
+              <DietarySettings
+                teamId={teamId}
+                accessToken={session.access_token}
+                onUpdated={() => teamId && loadTeamData(teamId, session.access_token)}
+              />
+            </Box>
+          )}
+          <Box mt={3}>
+            <TeamHistory history={team.history || []} />
+          </Box>
         </Box>
         <Box flex={1} minWidth={0}>
           <RecentSessions
@@ -265,6 +334,12 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
           <Button onClick={handleAddDialogSubmit} disabled={addLoading} variant="contained">Add</Button>
         </DialogActions>
       </Dialog>
+      <ReviewDialog
+        open={reviewDialogOpen}
+        onClose={() => setReviewDialogOpen(false)}
+        onSubmit={handleReviewSubmit}
+        loading={reviewLoading}
+      />
     </Container>
   );
 }

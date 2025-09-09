@@ -15,6 +15,7 @@ import {
 import SessionConfigModal from '@/components/sessions/SessionConfigModal';
 import SuggestionSearchBar from '@/components/sessions/SuggestionSearchBar';
 import SuggestionsList from '@/components/sessions/SuggestionsList';
+import VoteTallyPanel, { VoteTally } from '@/components/sessions/VoteTallyPanel';
 
 interface Session {
   id: string;
@@ -38,7 +39,25 @@ export default function SessionPage({ params }: any) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const router = useRouter();
   const [createError, setCreateError] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState([]);
+  interface Suggestion {
+    id: string;
+    label: string;
+    type: 'restaurant' | 'style';
+    external_ref?: {
+      yelp_id?: string;
+      categories?: string[];
+      coords?: { lat: number; lng: number };
+      price_tier?: number;
+      url?: string;
+    };
+    votes?: number;
+    priceTier?: number;
+    distanceMin?: number;
+    dietaryFit?: boolean;
+    lastVisitedAt?: string;
+  }
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [tally, setTally] = useState<VoteTally>({});
   // ...existing code...
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   // ...existing code...
@@ -48,6 +67,7 @@ export default function SessionPage({ params }: any) {
     setSessionId(id);
     loadSession(id);
     loadSuggestions(id);
+    loadTally(id);
   }, [params]);
 
   // ...existing code...
@@ -69,6 +89,21 @@ export default function SessionPage({ params }: any) {
       setSuggestionError('Failed to load suggestions.');
     }
   };
+
+  const loadTally = async (id: string) => {
+    try {
+      const response = await fetch(`/api/sessions/${id}/votes`, {
+        headers: {
+          'Authorization': 'Bearer temp-token'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to load tally');
+      const data = await response.json();
+      setTally(data.tally || {});
+    } catch {
+      setTally({});
+    }
+  };
   const handleSuggest = async (type: 'restaurant' | 'style', label: string) => {
     if (!sessionId) return;
     setSuggestionError(null);
@@ -86,11 +121,32 @@ export default function SessionPage({ params }: any) {
         setSuggestionError(error?.error?.message || 'Failed to add suggestion');
         return;
       }
-      // Reload suggestions after adding
+      // Reload suggestions and tally after adding
       loadSuggestions(sessionId);
+      loadTally(sessionId);
     } catch (error) {
       console.error('Add suggestion error:', error);
       setSuggestionError('Failed to add suggestion.');
+    }
+  };
+
+  const handleVote = async (suggestionId: string) => {
+    if (!sessionId) return;
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/votes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer temp-token'
+        },
+        body: JSON.stringify({ suggestionId })
+      });
+      if (response.ok) {
+        await loadTally(sessionId);
+        await loadSuggestions(sessionId);
+      }
+    } catch {
+      // Optionally handle error UI
     }
   };
 
@@ -227,13 +283,27 @@ export default function SessionPage({ params }: any) {
       {suggestionError && (
         <Alert severity="error" sx={{ mb: 2 }}>{suggestionError}</Alert>
       )}
-      <SuggestionsList suggestions={suggestions} onVote={() => {}} />
+      <SuggestionsList suggestions={suggestions} onVote={handleVote} tally={tally} />
+      <VoteTallyPanel
+        tally={tally}
+        suggestions={suggestions.map(s => ({ id: s.id, name: s.label || 'Unknown' }))}
+      />
 
       <SessionConfigModal
         open={configOpen}
         onClose={handleCloseConfig}
         onCreate={handleCreateSession}
       />
+
+      <Box mt={4} textAlign="center">
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => sessionId && router.push(`/session/${sessionId}/results`)}
+        >
+          View Results
+        </Button>
+      </Box>
     </Container>
   );
 }

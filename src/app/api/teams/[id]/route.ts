@@ -96,6 +96,36 @@ export async function GET(
       );
     }
 
+    // Get lunch history (last 10 sessions with restaurant, rating, review)
+    const { data: historyRows, error: historyError } = await supabaseAdmin
+      .from('lunch_sessions')
+      .select(`
+        id,
+        created_at,
+        restaurants: suggestions(label, external_ref),
+        reviews: reviews(rating, comment, user_id, created_at)
+      `)
+      .eq('team_id', teamId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (historyError) {
+      console.error('Error fetching lunch history:', historyError);
+    }
+
+    // Map history to UI shape
+    const history = (historyRows || []).map(session => {
+      const restaurant = session.restaurants?.[0]?.label || 'Unknown';
+      const review = session.reviews?.[0] || null;
+      return {
+        id: session.id,
+        date: session.created_at,
+        restaurant,
+        rating: review?.rating ?? null,
+        review: review?.comment ?? null
+      };
+    });
+
     return NextResponse.json({
       id: team.id,
       name: team.name,
@@ -109,7 +139,8 @@ export async function GET(
         dietary: member.dietary,
         joinedAt: member.created_at
       })),
-      recentSessions: recentSessions || []
+      recentSessions: recentSessions || [],
+      history
     });
 
   } catch (error) {

@@ -1,8 +1,10 @@
 'use client';
+
 import * as React from 'react';
 import { createTheme, ThemeProvider, useMediaQuery } from '@mui/material';
 import { useMemo } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
+import { AuthProvider } from './AuthProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Always call useMediaQuery, but disable SSR for media query detection
@@ -23,7 +25,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {children}
+      <AuthProvider>
+        {children}
+      </AuthProvider>
     </ThemeProvider>
   );
 }

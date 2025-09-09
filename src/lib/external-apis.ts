@@ -90,31 +90,47 @@ export async function getWalkingTimes(
   }
 
   try {
-    const response = await fetch(
-      `${OPENROUTE_SERVICE_CONFIG.baseUrl}${OPENROUTE_SERVICE_CONFIG.endpoints.matrix}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': process.env.OPENROUTE_SERVICE_API_KEY,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          locations: [
-            [from.lng, from.lat],
-            ...destinations.map(dest => [dest.lng, dest.lat])
-          ],
-          sources: [0],
-          destinations: destinations.map((_, i) => i + 1),
-          metrics: ['duration'],
-          units: 'm'
-        })
-      }
-    );
+    const url = `${OPENROUTE_SERVICE_CONFIG.baseUrl}${OPENROUTE_SERVICE_CONFIG.endpoints.matrix}`;
+    const headers = {
+      'Authorization': process.env.OPENROUTE_SERVICE_API_KEY,
+      'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+      'Content-Type': 'application/json; charset=utf-8',
+    };
+    const body = JSON.stringify({
+      locations: [
+        [from.lng, from.lat],
+        ...destinations.map(dest => [dest.lng, dest.lat])
+      ],
+      sources: [0],
+      destinations: destinations.map((_, i) => i + 1),
+      metrics: ['duration'],
+      units: 'm'
+    });
+    // Debug logging for integration test
+    if (process.env.NODE_ENV === 'test') {
+      // eslint-disable-next-line no-console
+      console.log('[ORS DEBUG] ENV:', {
+        OPENROUTE_SERVICE_API_KEY: process.env.OPENROUTE_SERVICE_API_KEY,
+      });
 
+      console.log('[ORS DEBUG] Config:', process.env);
+      // eslint-disable-next-line no-console
+      console.log('[ORS DEBUG] Request:', { url, headers, body });
+    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body
+    });
+    if (process.env.NODE_ENV === 'test') {
+      // eslint-disable-next-line no-console
+      console.log('[ORS DEBUG] Response status:', response.status);
+      // eslint-disable-next-line no-console
+      try { console.log('[ORS DEBUG] Response body:', await response.clone().text()); } catch {}
+    }
     if (!response.ok) {
       throw new Error(`OpenRouteService API error: ${response.status}`);
     }
-
     const data = await response.json();
     return data.durations[0].map((duration: number) => Math.round(duration / 60)); // Convert to minutes
   } catch (error) {

@@ -17,21 +17,21 @@
 ## Suggestions
 - Suggestions API (restaurant/style → Yelp expansion)
 - Distance proxy (ORS + fallback)
-- UI: search bar, suggestion cards
+- UI: search bar, suggestion cards ✅
 
 ## Voting
 - Votes API (visible votes)
-- UI: Vote buttons + live tally panel
+- UI: Vote buttons + live tally panel ✅
 
 ## Ranking & Results
-- Ranking fn (weights + tie-breakers)
-- Results API + results page
-- Sort controls + Lucky picker
+- Ranking fn (weights + tie-breakers) ✅
+- Results API + results page ✅
+- Sort controls + Lucky picker ✅
 
 ## Dietary Restrictions
 - User dietary settings
-- Dietary fit in ranking fn
-- Dietary badges in UI
+- Dietary fit in ranking fn ✅
+- Dietary badges in UI ✅
 
 ## History & Reviews
 - Reviews API
@@ -45,9 +45,9 @@
 - Badge on suggestion cards
 
 ## UI/UX Polish & Theming
-- Auto dark/light theming (no toggle)
-- Responsive layout
-- Accessibility checks
+- Auto dark/light theming (no toggle) ✅
+- Responsive layout ✅
+- Accessibility checks ✅
 
 ## QA / Testing
 - Unit, integration, API, UI tests

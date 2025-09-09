@@ -1,3 +1,4 @@
+
 # 📈 Progress Tracking
 
 ## Milestones
@@ -8,7 +9,14 @@
 
 ## Status
 - PRD, design, and tasks loaded
-- Ready to begin implementation
+- Voting and live tally integrated into session page
+- Suggestions and tally update after voting or suggesting
+- UI uses VoteTallyPanel for real-time feedback
+- Ranking function and results API implemented
+- Results page displays winner and full ranking
+- Dietary fit integrated into ranking and UI badges
+- Sort controls and Lucky picker implemented on results page
+- Auto dark/light theming, responsive layout, and accessibility improvements in UI
 
 ## Blockers
 - None identified
