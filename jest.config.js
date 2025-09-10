@@ -12,7 +12,13 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   globals: {
     'ts-jest': {
-      tsconfig: 'tsconfig.json',
+      tsconfig: {
+        // Use a test-friendly override so ts-jest will transform TSX -> JS
+        "compilerOptions": {
+            "jsx": "react",
+          "module": "commonjs"
+        }
+      },
       diagnostics: false
     }
   },
