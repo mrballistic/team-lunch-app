@@ -1,4 +1,6 @@
 
+JON WUZ HERE
+
 # 🍽️ Team Lunch App
 
 Lightweight MVP to help teams pick a lunch spot: create teams, suggest restaurants or cuisine styles, vote, and view results. Built with Next.js (App Router), Supabase, and MUI.
