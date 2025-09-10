@@ -7,6 +7,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import SupabaseAuth from '@/components/auth/SupabaseAuth';
 import { ThemeProvider, createTheme } from '@mui/material';
+import '@testing-library/jest-dom';
 
 // Mock Next router used inside the component
 jest.mock('next/navigation', () => ({
@@ -32,7 +33,7 @@ describe('SupabaseAuth component', () => {
         <SupabaseAuth />
       </ThemeProvider>
     );
-  expect(screen.getByLabelText(/Email/i)).toBeTruthy();
-  expect(screen.getByLabelText(/Password/i)).toBeTruthy();
+  expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
   });
 });
