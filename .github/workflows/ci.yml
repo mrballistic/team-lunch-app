@@ -19,6 +19,18 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 8
+      - name: Ensure pnpm available (fallback via Corepack)
+        run: |
+          corepack enable || true
+          corepack prepare pnpm@8.8.0 --activate || true
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store/v3
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
       - name: Install
         run: pnpm install
       - name: Lint
