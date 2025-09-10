@@ -3,12 +3,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
 
-import { Box, TextField, Button, Typography, Paper, useTheme } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 
 export default function SupabaseAuth() {
   // Prefer a public NEXT_PUBLIC_TEAM_ID; fall back to older keys if present.
   const TEAM_ID = process.env.NEXT_PUBLIC_TEAM_ID || process.env.NEXT_PUBLIC_PUBLIC_TEAM_ID || process.env.NEXT_PUBLIC_SUPABASE_TEAM_ID || process.env.NEXT_PUBLIC_TEAM_ID || '';
-  const theme = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -134,11 +133,12 @@ export default function SupabaseAuth() {
         maxWidth: 400,
         mx: 'auto',
         mt: 4,
-        background: theme.palette.background.paper,
-        boxShadow: theme.shadows[2],
+        bgcolor: 'background.paper',
+        boxShadow: 2,
+        color: 'text.primary',
       }}
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom color="text.primary">
         {mode === 'sign-in' ? 'Sign In' : 'Sign Up'}
       </Typography>
       <Box
@@ -156,6 +156,16 @@ export default function SupabaseAuth() {
           onChange={e => setEmail(e.target.value)}
           required
           autoComplete="email"
+          variant="outlined"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root': { color: 'text.secondary' },
+            '& .MuiOutlinedInput-root': {
+              color: 'text.primary',
+              bgcolor: 'background.default',
+              '& fieldset': { borderColor: 'divider' },
+            },
+          }}
         />
         <TextField
           label="Password"
@@ -164,6 +174,16 @@ export default function SupabaseAuth() {
           onChange={e => setPassword(e.target.value)}
           required
           autoComplete="current-password"
+          variant="outlined"
+          fullWidth
+          sx={{
+            '& .MuiInputLabel-root': { color: 'text.secondary' },
+            '& .MuiOutlinedInput-root': {
+              color: 'text.primary',
+              bgcolor: 'background.default',
+              '& fieldset': { borderColor: 'divider' },
+            },
+          }}
         />
         {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}
         <Button type="submit" variant="contained" disabled={loading} sx={{ mt: 1 }}>
