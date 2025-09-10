@@ -1,3 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config({ path: '.env.test' });
-// Note: to enable DOM matchers like `toBeInTheDocument`, install @testing-library/jest-dom
+// Enable DOM matchers for testing-library
+import '@testing-library/jest-dom';
