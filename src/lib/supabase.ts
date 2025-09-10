@@ -1,6 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+let supabase: SupabaseClient | null = null;
+let supabaseAdmin: SupabaseClient | null = null;
 
 export function getSupabaseClient() {
+  if (supabase) return supabase;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   let supabaseAnonKey = '';
   if (typeof window === 'undefined') {
@@ -13,27 +18,24 @@ export function getSupabaseClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('supabaseKey is required. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local.');
   }
-  return createClient(supabaseUrl, supabaseAnonKey);
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  return supabase;
 }
 
-// For legacy usage, keep a default export (optional, can be removed if not needed)
-export const supabase = getSupabaseClient();
-
-// Server-side client with service role key for admin operations
 export function getSupabaseAdminClient() {
+  if (supabaseAdmin) return supabaseAdmin;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error('Service role key or Supabase URL missing.');
   }
-  return createClient(supabaseUrl, serviceRoleKey, {
+  supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
   });
+  return supabaseAdmin;
 }
 
-// For legacy usage, keep a default export (optional, can be removed if not needed)
-export const supabaseAdmin = getSupabaseClient();
 

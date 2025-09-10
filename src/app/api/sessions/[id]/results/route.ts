@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
 
 // Ranking function: dietary fit > votes > walk time > price > random tie-breaker
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const { id: sessionId } = await context.params;
     await authenticateUser(request.headers.get('authorization'));
     // Get all suggestions for this session
+    const supabaseAdmin = getSupabaseAdminClient();
     const { data: suggestions, error } = await supabaseAdmin
       .from('suggestions')
       .select('*')

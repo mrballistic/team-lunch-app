@@ -1,7 +1,7 @@
 // API utility functions and error handling
 import { NextResponse } from 'next/server';
 // Ensure supabaseAdmin is exported from './supabase'
-import { supabaseAdmin } from './supabase';
+import { getSupabaseAdminClient } from './supabase';
 // If the export is named differently, update the import accordingly:
 // import { correctExportName as supabaseAdmin } from './supabase';
 
@@ -39,6 +39,7 @@ export async function authenticateUser(authHeader: string | null) {
   }
 
   const token = authHeader.replace('Bearer ', '');
+  const supabaseAdmin = getSupabaseAdminClient();
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   
   if (error || !user) {
@@ -53,6 +54,7 @@ export async function checkTeamMembership(
   userId: string,
   requiredRole?: 'owner' | 'member'
 ) {
+  const supabaseAdmin = getSupabaseAdminClient();
   const { data: membership } = await supabaseAdmin
     .from('team_members')
     .select('role')

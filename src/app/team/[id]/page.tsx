@@ -253,7 +253,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     );
   }
 
-  const currentUserMember = user ? team.members.find(m => m.user.id === user.id) : undefined;
+  const currentUserMember = user ? team.members.find(m => m.user && m.user.id === user.id) : undefined;
   const isOwner = currentUserMember?.role === 'owner';
 
   return (

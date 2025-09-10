@@ -1,17 +1,18 @@
 "use client";
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-// Use the team ID from environment variable
-const TEAM_ID = process.env.NEXT_PUBLIC_PUBLIC_TEAM_ID;
+import { getSupabaseClient } from '@/lib/supabase';
+
 import { Box, TextField, Button, Typography, Paper, useTheme } from '@mui/material';
 
 export default function SupabaseAuth() {
+  const TEAM_ID = process.env.NEXT_PUBLIC_PUBLIC_TEAM_ID;
   const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
+  const supabase = getSupabaseClient();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,23 +22,82 @@ export default function SupabaseAuth() {
       let result;
       if (mode === 'sign-in') {
         result = await supabase.auth.signInWithPassword({ email, password });
-        // If sign-in succeeded, upsert user into team_members
-        if (!result.error && result.data.user) {
-          await supabase.from('team_members').upsert([
+        console.log('Sign-in result:', result);
+        if (result.error) {
+          setError('Sign-in error: ' + result.error.message);
+          return;
+        }
+        if (result.data && result.data.user) {
+          // Insert user into custom users table (if not exists)
+          // Log auth.uid() via a select to confirm session context
+          const { data: authUser } = await supabase.rpc('get_my_uid');
+          console.log('auth.uid() from RPC:', authUser);
+          console.log('Attempting to insert user:', { id: result.data.user.id, email });
+          const { error: userInsertError } = await supabase.from('users').upsert([
+            { id: result.data.user.id, email }
+          ], { onConflict: 'id' });
+          if (userInsertError) {
+            console.error('Failed to insert user:', userInsertError);
+            setError('Failed to create user: ' + userInsertError.message);
+            return;
+          }
+          // Now upsert into team_members
+          const { error: upsertError } = await supabase.from('team_members').upsert([
             { team_id: TEAM_ID, user_id: result.data.user.id, role: 'member' }
           ], { onConflict: 'team_id,user_id' });
+          if (upsertError) {
+            console.error('Failed to upsert team_members:', upsertError);
+            setError('Failed to join team: ' + upsertError.message);
+            return;
+          }
+        } else {
+          setError('No user returned from sign-in.');
+          return;
         }
+        window.location.href = `/team/${TEAM_ID}`;
       } else {
         result = await supabase.auth.signUp({ email, password });
-        // If sign-up succeeded, upsert user into team_members
-        if (!result.error && result.data.user) {
-          await supabase.from('team_members').upsert([
-            { team_id: TEAM_ID, user_id: result.data.user.id, role: 'member' }
-          ], { onConflict: 'team_id,user_id' });
+        console.log('Sign-up result:', result);
+        if (result.error) {
+          setError('Sign-up error: ' + result.error.message);
+          return;
         }
+        // After sign-up, sign in to get a session
+        const signInResult = await supabase.auth.signInWithPassword({ email, password });
+        console.log('Sign-in after sign-up result:', signInResult);
+        if (signInResult.error) {
+          setError('Sign-in error after sign-up: ' + signInResult.error.message);
+          return;
+        }
+        if (signInResult.data && signInResult.data.user) {
+          // Insert user into custom users table (if not exists)
+          // Log auth.uid() via a select to confirm session context
+          const { data: authUser } = await supabase.rpc('get_my_uid');
+          console.log('auth.uid() from RPC:', authUser);
+          console.log('Attempting to insert user:', { id: signInResult.data.user.id, email });
+          const { error: userInsertError } = await supabase.from('users').upsert([
+            { id: signInResult.data.user.id, email }
+          ], { onConflict: 'id' });
+          if (userInsertError) {
+            console.error('Failed to insert user:', userInsertError);
+            setError('Failed to create user: ' + userInsertError.message);
+            return;
+          }
+          // Now upsert into team_members
+          const { error: upsertError } = await supabase.from('team_members').upsert([
+            { team_id: TEAM_ID, user_id: signInResult.data.user.id, role: 'member' }
+          ], { onConflict: 'team_id,user_id' });
+          if (upsertError) {
+            console.error('Failed to upsert team_members:', upsertError);
+            setError('Failed to join team: ' + upsertError.message);
+            return;
+          }
+        } else {
+          setError('No user returned from sign-in after sign-up.');
+          return;
+        }
+        window.location.href = `/team/${TEAM_ID}`;
       }
-      if (result.error) setError(result.error.message);
-      else window.location.href = `/team/${TEAM_ID}`;
     } catch (err) {
       setError((err as Error).message);
     } finally {

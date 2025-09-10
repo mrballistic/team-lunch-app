@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
@@ -9,6 +9,9 @@ export async function POST(
     const { id: teamId } = await context.params;
     const body = await request.json();
     const { sessionId, rating, comment } = body;
+
+    // Get Supabase admin client
+    const supabaseAdmin = getSupabaseAdminClient();
 
     // Get user from auth header
     const authHeader = request.headers.get('authorization');

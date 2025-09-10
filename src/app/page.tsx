@@ -1,19 +1,20 @@
 import { Container, Typography, Box, Paper, Button } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
 
-export default function Home() {
+export default function HomePage() {
+  const theme = useTheme();
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={4}>
         <Typography variant="h2" component="h1" gutterBottom>
-          🍽️ Team Lunch App
+          Team Lunch App
         </Typography>
         <Typography variant="h5" color="text.secondary" gutterBottom>
           Help teams vote on where to go to lunch
         </Typography>
       </Box>
-      
-      <Paper elevation={2} sx={{ p: 4, textAlign: 'center' }}>
+      <Paper elevation={2} sx={{ p: 4, textAlign: 'center', background: theme.palette.background.paper }}>
         <Typography variant="h6" gutterBottom>
           Welcome to Team Lunch!
         </Typography>
@@ -21,7 +22,6 @@ export default function Home() {
           We&apos;re building the ultimate team lunch decision tool. 
           Suggest restaurants, vote, and let the app handle the rest!
         </Typography>
-        
         <Box display="flex" gap={2} justifyContent="center">
           <Button variant="contained" component={Link} href="/demo">
             View Demo Team

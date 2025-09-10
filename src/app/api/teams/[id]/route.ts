@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string}> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: teamId } = await context.params;
+    const teamId = params.id;
+    const supabaseAdmin = getSupabaseAdminClient();
 
     // Get user from auth header
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('No Authorization header');
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Authorization header required' } },
         { status: 401 }
@@ -19,23 +21,29 @@ export async function GET(
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    
+
     if (authError || !user) {
+      console.log('Invalid token or no user', { authError, user });
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Invalid token' } },
         { status: 401 }
       );
     }
 
-    // Check if user is a member of this team
-    const { data: membership } = await supabaseAdmin
-      .from('team_members')
-      .select('*')
-      .eq('team_id', teamId)
-      .eq('user_id', user.id)
-      .single();
+    // Log types and lengths of IDs
+    console.log("[API][Team GET] teamId:", teamId, "type:", typeof teamId, "length:", teamId.length);
+    console.log("[API][Team GET] user.id:", user.id, "type:", typeof user.id, "length:", user.id.length);
 
-    if (!membership) {
+    // Log user and team info
+    console.log('Checking membership for user:', user.id, 'team:', teamId);
+
+    // Check if user is a member of this team using SECURITY DEFINER function
+    const { data: membership, error: membershipError } = await supabaseAdmin
+      .rpc('get_team_members', { team_id: teamId, user_id: user.id });
+    console.log("[API][Team GET] Membership query result (via function):", membership, membershipError);
+
+    if (!membership || membership.length === 0) {
+      console.log('User is not a member of this team (via function):', { userId: user.id, teamId });
       return NextResponse.json(
         { error: { code: 'FORBIDDEN', message: 'Not a member of this team' } },
         { status: 403 }
@@ -48,10 +56,12 @@ export async function GET(
       .select('*')
       .eq('id', teamId)
       .single();
+    console.log('Team fetch result:', team, teamError);
 
     if (teamError) {
+      console.error('Team fetch error:', teamError);
       return NextResponse.json(
-        { error: { code: 'NOT_FOUND', message: 'Team not found' } },
+        { error: { code: 'NOT_FOUND', message: 'Team not found', details: teamError } },
         { status: 404 }
       );
     }

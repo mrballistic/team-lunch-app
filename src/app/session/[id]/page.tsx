@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import SessionConfigModal from '@/components/sessions/SessionConfigModal';
 import SuggestionSearchBar from '@/components/sessions/SuggestionSearchBar';
 import SuggestionsList from '@/components/sessions/SuggestionsList';
@@ -32,6 +33,7 @@ interface Session {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function SessionPage({ params }: any) {
+  const theme = useTheme();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -252,7 +254,7 @@ export default function SessionPage({ params }: any) {
           Configure Session
         </Button>
       </Box>
-      <Paper elevation={2} sx={{ p: 4, mb: 4 }}>
+      <Paper elevation={2} sx={{ p: 4, mb: 4, background: theme.palette.background.paper }}>
         <Typography variant="h6" gutterBottom>
           Status: <Chip label={session.status} color={session.status === 'open' ? 'success' : session.status === 'closed' ? 'default' : 'warning'} />
         </Typography>

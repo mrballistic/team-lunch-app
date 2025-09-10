@@ -5,10 +5,9 @@ import {
   Avatar, 
   Chip, 
   Box,
-  Button,
   IconButton
 } from '@mui/material';
-import { PersonAdd, Delete } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 
 interface TeamMember {
   user: {
@@ -22,11 +21,11 @@ interface TeamMember {
   joinedAt: string;
 }
 
+
 interface TeamMembersProps {
   members: TeamMember[];
   currentUserId: string;
   isOwner: boolean;
-  onAddMember: () => void;
   onRemoveMember: (userId: string) => void;
 }
 
@@ -34,92 +33,81 @@ export default function TeamMembers({
   members,
   currentUserId,
   isOwner,
-  onAddMember,
   onRemoveMember
 }: TeamMembersProps) {
   return (
     <Card>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6" component="h2">
-            Team Members ({members.length})
-          </Typography>
-          {isOwner && (
-            <Button
-              startIcon={<PersonAdd />}
-              variant="outlined"
-              onClick={onAddMember}
-              size="small"
-              aria-label="Add team member"
-            >
-              Add Member
-            </Button>
-          )}
-        </Box>
-
-        <Box display="flex" flexDirection="column" gap={2}>
-          {members.map((member) => (
-            <Box
-              key={member.user.id}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              p={1}
-              border={1}
-              borderColor="divider"
-              borderRadius={1}
-            >
-              <Box display="flex" alignItems="center" gap={2}>
-                <Avatar
-                  src={member.user.avatar_url || undefined}
-                  alt={member.user.name || member.user.email}
-                  aria-label={`Avatar for ${member.user.name || member.user.email}`}
+               <Typography variant="h6" component="h2">
+                 Team Members ({members.length})
+               </Typography>
+            {members.map((member, idx) => {
+              const user = member.user;
+              const userId = user?.id || `unknown-${idx}`;
+              const userName = user?.name || user?.email || 'Unknown User';
+              const userEmail = user?.email || '';
+              const avatarUrl = user?.avatar_url || undefined;
+              const avatarFallback = userName[0]?.toUpperCase() || '?';
+              return (
+                <Box
+                  key={userId}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  p={1}
+                  border={1}
+                  borderColor="divider"
+                  borderRadius={1}
                 >
-                  {(member.user.name || member.user.email)[0].toUpperCase()}
-                </Avatar>
-                
-                <Box>
-                  <Typography variant="body1" fontWeight="medium">
-                    {member.user.name || member.user.email}
-                  </Typography>
-                  {member.user.name && (
-                    <Typography variant="body2" color="text.secondary">
-                      {member.user.email}
-                    </Typography>
-                  )}
-                  
-                  <Box display="flex" gap={1} mt={0.5}>
-                    <Chip
-                      label={member.role}
-                      size="small"
-                      color={member.role === 'owner' ? 'primary' : 'default'}
-                    />
-                    
-                    {Object.entries(member.dietary).filter(([, value]) => value).map(([key]) => (
-                      <Chip
-                        key={key}
-                        label={key}
-                        size="small"
-                        variant="outlined"
-                        color="secondary"
-                      />
-                    ))}
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar
+                      src={avatarUrl}
+                      alt={userName}
+                      aria-label={`Avatar for ${userName}`}
+                    >
+                      {avatarFallback}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body1" fontWeight="medium">
+                        {userName}
+                      </Typography>
+                      {user?.name && (
+                        <Typography variant="body2" color="text.secondary">
+                          {userEmail}
+                        </Typography>
+                      )}
+                      <Box display="flex" gap={1} mt={0.5}>
+                        <Chip
+                          label={member.role}
+                          size="small"
+                          color={member.role === 'owner' ? 'primary' : 'default'}
+                        />
+                        {Object.entries(member.dietary).filter(([, value]) => value).map(([key]) => (
+                          <Chip
+                            key={key}
+                            label={key}
+                            size="small"
+                            variant="outlined"
+                            color="secondary"
+                          />
+                        ))}
+                      </Box>
+                    </Box>
                   </Box>
+                  {isOwner && user?.id && user.id !== currentUserId && (
+                    <IconButton
+                      onClick={() => onRemoveMember(user.id)}
+                      color="error"
+                      size="small"
+                      aria-label={`Remove ${userName} from team`}
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
                 </Box>
-              </Box>
-
-              {isOwner && member.user.id !== currentUserId && (
-                <IconButton
-                  onClick={() => onRemoveMember(member.user.id)}
-                  color="error"
-                  size="small"
-                  aria-label={`Remove ${member.user.name || member.user.email} from team`}
-                >
-                  <Delete />
-                </IconButton>
-              )}
-            </Box>
-          ))}
+              );
+            })}
         </Box>
       </CardContent>
     </Card>
