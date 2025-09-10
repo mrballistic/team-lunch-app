@@ -1,9 +1,7 @@
 import { Container, Typography, Box, Paper, Button } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import Link from 'next/link';
 
 export default function HomePage() {
-  const theme = useTheme();
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={4}>
@@ -14,7 +12,7 @@ export default function HomePage() {
           Help teams vote on where to go to lunch
         </Typography>
       </Box>
-      <Paper elevation={2} sx={{ p: 4, textAlign: 'center', background: theme.palette.background.paper }}>
+  <Paper elevation={2} sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="h6" gutterBottom>
           Welcome to Team Lunch!
         </Typography>
@@ -23,12 +21,16 @@ export default function HomePage() {
           Suggest restaurants, vote, and let the app handle the rest!
         </Typography>
         <Box display="flex" gap={2} justifyContent="center">
-          <Button variant="contained" component={Link} href="/demo">
-            View Demo Team
-          </Button>
-          <Button variant="outlined" component={Link} href="/auth">
-            Sign In
-          </Button>
+          <Link href="/demo" legacyBehavior>
+            <a>
+              <Button variant="contained">View Demo Team</Button>
+            </a>
+          </Link>
+          <Link href="/auth" legacyBehavior>
+            <a>
+              <Button variant="outlined">Sign In</Button>
+            </a>
+          </Link>
         </Box>
       </Paper>
     </Container>

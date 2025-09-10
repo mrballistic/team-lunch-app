@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 import { Database } from '@/types/database';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
 
@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('MISSING_FIELDS', 'Name and defaultLocation are required', 400);
     }
 
-    const user = await authenticateUser(request.headers.get('authorization'));
+  const user = await authenticateUser(request.headers.get('authorization'));
+  const supabaseAdmin = getSupabaseAdminClient();
 
     // Create team
     const teamData: TeamInsert = {

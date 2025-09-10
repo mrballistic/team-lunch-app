@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export async function POST(
   request: NextRequest,
@@ -26,8 +26,9 @@ export async function POST(
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  const token = authHeader.replace('Bearer ', '');
+  const supabaseAdmin = getSupabaseAdminClient();
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json(
@@ -141,8 +142,9 @@ export async function DELETE(
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  const token = authHeader.replace('Bearer ', '');
+  const supabaseAdmin = getSupabaseAdminClient();
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json(

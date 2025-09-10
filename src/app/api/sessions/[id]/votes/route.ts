@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
 
 export async function POST(
@@ -15,7 +15,8 @@ export async function POST(
     }
     const user = await authenticateUser(request.headers.get('authorization'));
     // Upsert vote (idempotent, last write wins)
-    const { error: voteError } = await supabaseAdmin
+  const supabaseAdmin = getSupabaseAdminClient();
+  const { error: voteError } = await supabaseAdmin
       .from('votes')
       .upsert({
         session_id: sessionId,
@@ -27,7 +28,7 @@ export async function POST(
       return createErrorResponse('DATABASE_ERROR', 'Failed to cast vote', 500);
     }
     // Get updated tally
-    const { data: votes, error: tallyError } = await supabaseAdmin
+  const { data: votes, error: tallyError } = await supabaseAdmin
       .from('votes')
       .select('suggestion_id')
       .eq('session_id', sessionId);
@@ -52,7 +53,8 @@ export async function GET(
   try {
     const { id: sessionId } = await context.params;
     // Get all votes and tally
-    const { data: votes, error: votesError } = await supabaseAdmin
+  const supabaseAdmin = getSupabaseAdminClient();
+  const { data: votes, error: votesError } = await supabaseAdmin
       .from('votes')
       .select('user_id, suggestion_id')
       .eq('session_id', sessionId);
@@ -61,7 +63,7 @@ export async function GET(
     }
     // Tally votes
     const tally: Record<string, number> = {};
-    votes.forEach(v => {
+    (votes || []).forEach((v: { suggestion_id: string }) => {
       tally[v.suggestion_id] = (tally[v.suggestion_id] || 0) + 1;
     });
     return createSuccessResponse({ votes, tally });

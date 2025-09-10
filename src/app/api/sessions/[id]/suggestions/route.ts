@@ -15,8 +15,10 @@ interface Suggestion {
 }
 
 import { NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
+import { getDistanceProxy } from '@/lib/distance-proxy';
+import { searchYelp } from '@/lib/external-apis';
 
 export async function GET(
   request: NextRequest,
@@ -25,6 +27,7 @@ export async function GET(
   try {
     const { id: sessionId } = await context.params;
     await authenticateUser(request.headers.get('authorization'));
+    const supabaseAdmin = getSupabaseAdminClient();
     const { data, error: suggestionsError } = await supabaseAdmin
       .from('suggestions')
       .select('*')
@@ -35,14 +38,14 @@ export async function GET(
     }
 
     // Get session to find team location
-    const { data: session } = await supabaseAdmin
+  const { data: session } = await supabaseAdmin
       .from('lunch_sessions')
       .select('team_id')
       .eq('id', sessionId)
       .single();
     let teamLocation: { lat: number; lng: number } | null = null;
     if (session) {
-      const { data: team } = await supabaseAdmin
+  const { data: team } = await supabaseAdmin
         .from('teams')
         .select('default_location_lat, default_location_lng')
         .eq('id', session.team_id)
@@ -58,7 +61,7 @@ export async function GET(
     // Get team dietary restrictions
     let dietaryRestrictions: string[] = [];
     if (session) {
-      const { data: teamMembers } = await supabaseAdmin
+  const { data: teamMembers } = await supabaseAdmin
         .from('team_members')
         .select('dietary_restrictions')
         .eq('team_id', session.team_id);
@@ -82,7 +85,6 @@ export async function GET(
     }
     // Calculate walking time for each suggestion with coords
     if (teamLocation) {
-      const { getDistanceProxy } = await import('@/lib/distance-proxy');
       for (const suggestion of suggestions) {
         const coords = suggestion.external_ref?.coords;
         if (coords && typeof coords.lat === 'number' && typeof coords.lng === 'number') {
@@ -92,7 +94,7 @@ export async function GET(
       }
     }
     // Get votes for ranking
-    const { data: votes } = await supabaseAdmin
+  const { data: votes } = await supabaseAdmin
       .from('votes')
       .select('suggestion_id')
       .eq('session_id', sessionId);
@@ -140,11 +142,12 @@ export async function POST(
     if (!type || !label) {
       return createErrorResponse('MISSING_FIELDS', 'type and label are required', 400);
     }
-    const user = await authenticateUser(request.headers.get('authorization'));
-    let expanded = undefined;
+  const user = await authenticateUser(request.headers.get('authorization'));
+  const supabaseAdmin = getSupabaseAdminClient();
+  let expanded = undefined;
       if (type === 'style') {
-        // Get session to find team location
-        const { data: session } = await supabaseAdmin
+  // Get session to find team location
+  const { data: session } = await supabaseAdmin
           .from('lunch_sessions')
           .select('team_id')
           .eq('id', sessionId)
@@ -157,14 +160,14 @@ export async function POST(
             .single();
           if (team) {
             // Yelp search for style near office
-            const { businesses } = await import('@/lib/external-apis').then(m => m.searchYelp(label, team.default_location_lat, team.default_location_lng, 5));
+            const { businesses } = await searchYelp(label, team.default_location_lat, team.default_location_lng, 5);
             expanded = businesses;
           }
         }
       }
       
       // Create the suggestion
-      const { data, error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
         .from('suggestions')
         .insert({
           session_id: sessionId,

@@ -7,6 +7,7 @@ import {
   Box,
   IconButton
 } from '@mui/material';
+import { Button } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
 interface TeamMember {
@@ -27,22 +28,30 @@ interface TeamMembersProps {
   currentUserId: string;
   isOwner: boolean;
   onRemoveMember: (userId: string) => void;
+  onAddMember?: () => void;
 }
 
 export default function TeamMembers({
   members,
   currentUserId,
   isOwner,
-  onRemoveMember
+  onRemoveMember,
+  onAddMember
 }: TeamMembersProps) {
   return (
     <Card>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-               <Typography variant="h6" component="h2">
-                 Team Members ({members.length})
-               </Typography>
-            {members.map((member, idx) => {
+          <Typography variant="h6" component="h2">
+            Team Members ({members.length})
+          </Typography>
+          {isOwner && onAddMember && (
+            <Button variant="outlined" size="small" onClick={onAddMember} sx={{ ml: 2 }}>
+              Add
+            </Button>
+          )}
+        </Box>
+        {members.map((member, idx) => {
               const user = member.user;
               const userId = user?.id || `unknown-${idx}`;
               const userName = user?.name || user?.email || 'Unknown User';
@@ -108,7 +117,6 @@ export default function TeamMembers({
                 </Box>
               );
             })}
-        </Box>
       </CardContent>
     </Card>
   );

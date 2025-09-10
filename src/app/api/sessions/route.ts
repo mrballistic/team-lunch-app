@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 import { authenticateUser, createErrorResponse, createSuccessResponse, handleApiError } from '@/lib/api-utils';
 import { Database } from '@/types/database';
 
@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
     if (!teamId) {
       return createErrorResponse('MISSING_FIELDS', 'teamId is required', 400);
     }
-    const user = await authenticateUser(request.headers.get('authorization'));
+  const user = await authenticateUser(request.headers.get('authorization'));
+  const supabaseAdmin = getSupabaseAdminClient();
     const sessionData: SessionInsert = {
       team_id: teamId,
       max_walk_minutes: maxWalkMinutes ?? null,
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
       cooldown_days: cooldownDays ?? null,
       created_by: user.id
     };
-    const { data: session, error: sessionError } = await supabaseAdmin
+  const { data: session, error: sessionError } = await supabaseAdmin
       .from('lunch_sessions')
       .insert(sessionData)
       .select()
@@ -46,7 +47,8 @@ export async function PATCH(request: NextRequest) {
     if (!sessionId || !action) {
       return createErrorResponse('MISSING_FIELDS', 'sessionId and action are required', 400);
     }
-    const user = await authenticateUser(request.headers.get('authorization'));
+  const user = await authenticateUser(request.headers.get('authorization'));
+  const supabaseAdmin = getSupabaseAdminClient();
     let updateData = {};
     if (action === 'open') {
       updateData = { status: 'open' };
@@ -55,7 +57,7 @@ export async function PATCH(request: NextRequest) {
     } else {
       return createErrorResponse('INVALID_ACTION', 'Unknown action', 400);
     }
-    const { data: session, error: sessionError } = await supabaseAdmin
+  const { data: session, error: sessionError } = await supabaseAdmin
       .from('lunch_sessions')
       .update(updateData)
       .eq('id', sessionId)
