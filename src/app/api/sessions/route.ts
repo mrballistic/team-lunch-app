@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest) {
     if (!sessionId || !action) {
       return createErrorResponse('MISSING_FIELDS', 'sessionId and action are required', 400);
     }
-  const user = await authenticateUser(request.headers.get('authorization'));
+  await authenticateUser(request.headers.get('authorization'));
   const supabaseAdmin = getSupabaseAdminClient();
     let updateData = {};
     if (action === 'open') {

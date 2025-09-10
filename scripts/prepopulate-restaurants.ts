@@ -1,18 +1,20 @@
 // scripts/prepopulate-restaurants.ts
 
 import dotenv from 'dotenv';
+// Load .env.local then .env as a fallback
 dotenv.config({ path: '.env.local' });
+dotenv.config();
 import { getSupabaseAdminClient } from '../src/lib/supabase';
 import { searchYelp } from '../src/lib/external-apis';
 
 // Set these for your team
 
-const TEAM_ID = process.env.TEAM_ID || 'YOUR_TEAM_ID_HERE';
-const TEAM_LAT = process.env.TEAM_LAT ? parseFloat(process.env.TEAM_LAT) : 45.52761; // Replace with your team's lat
-const TEAM_LON = process.env.TEAM_LON ? parseFloat(process.env.TEAM_LON) : -122.71472; // Replace with your team's lon
+const TEAM_ID = process.env.TEAM_ID || process.env.NEXT_PUBLIC_TEAM_ID || '';
+const TEAM_LAT = process.env.TEAM_LAT ? parseFloat(process.env.TEAM_LAT) : 45.52761;
+const TEAM_LON = process.env.TEAM_LON ? parseFloat(process.env.TEAM_LON) : -122.71472;
 
-if (!TEAM_ID || TEAM_ID === 'YOUR_TEAM_ID_HERE') {
-  console.error('Please set TEAM_ID, TEAM_LAT, and TEAM_LON at the top of the script or via environment variables.');
+if (!TEAM_ID) {
+  console.error('Please set TEAM_ID (or NEXT_PUBLIC_TEAM_ID) in .env.local before running this script.');
   process.exit(1);
 }
 

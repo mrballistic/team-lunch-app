@@ -1,10 +1,10 @@
 "use client";
-import { Container, Typography, Box, Paper, Button } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+
+import React from 'react';
+import { Container, Typography, Box, Paper } from '@mui/material';
 import SupabaseAuth from '@/components/auth/SupabaseAuth';
 
 export default function AuthPage() {
-  const theme = useTheme();
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 2, sm: 4 } }}>
       <Box textAlign="center" mb={4}>
@@ -12,15 +12,12 @@ export default function AuthPage() {
           🔐 Sign In
         </Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom>
-          This is a placeholder sign-in page. Integrate Supabase or your auth provider here.
+          Sign in or create an account to join your team.
         </Typography>
       </Box>
-      <Paper elevation={2} sx={{ p: { xs: 2, sm: 4 }, textAlign: 'center', background: theme.palette.background.paper }}>
-        <Button variant="contained" disabled sx={{ mb: 2 }}>
-          Sign in with Supabase (Coming Soon)
-        </Button>
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 4 } }}>
+        <SupabaseAuth />
       </Paper>
-      <SupabaseAuth />
     </Container>
   );
 }

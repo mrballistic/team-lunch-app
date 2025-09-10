@@ -1,12 +1,15 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
 
 import { Box, TextField, Button, Typography, Paper, useTheme } from '@mui/material';
 
 export default function SupabaseAuth() {
-  const TEAM_ID = process.env.NEXT_PUBLIC_PUBLIC_TEAM_ID;
+  // Prefer a public NEXT_PUBLIC_TEAM_ID; fall back to older keys if present.
+  const TEAM_ID = process.env.NEXT_PUBLIC_TEAM_ID || process.env.NEXT_PUBLIC_PUBLIC_TEAM_ID || process.env.NEXT_PUBLIC_SUPABASE_TEAM_ID || process.env.NEXT_PUBLIC_TEAM_ID || '';
   const theme = useTheme();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export default function SupabaseAuth() {
           setError('Sign-in error: ' + result.error.message);
           return;
         }
-        if (result.data && result.data.user) {
+  if (result.data && result.data.user) {
           // Insert user into custom users table (if not exists)
           // Log auth.uid() via a select to confirm session context
           const { data: authUser } = await supabase.rpc('get_my_uid');
@@ -54,7 +57,9 @@ export default function SupabaseAuth() {
           setError('No user returned from sign-in.');
           return;
         }
-        window.location.href = `/team/${TEAM_ID}`;
+  // Use Next router for client-side navigation; if TEAM_ID missing, redirect home.
+  if (TEAM_ID) router.push(`/team/${TEAM_ID}`);
+  else router.push('/');
       } else {
         result = await supabase.auth.signUp({ email, password });
         console.log('Sign-up result:', result);
@@ -96,7 +101,8 @@ export default function SupabaseAuth() {
           setError('No user returned from sign-in after sign-up.');
           return;
         }
-        window.location.href = `/team/${TEAM_ID}`;
+  if (TEAM_ID) router.push(`/team/${TEAM_ID}`);
+  else router.push('/');
       }
     } catch (err) {
       setError((err as Error).message);
@@ -104,6 +110,22 @@ export default function SupabaseAuth() {
       setLoading(false);
     }
   };
+
+  // If a session already exists, redirect to the team page.
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session?.user) {
+          if (TEAM_ID) router.replace(`/team/${TEAM_ID}`);
+          else router.replace('/');
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Paper
